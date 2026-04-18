@@ -152,17 +152,17 @@ plot_prices <- ggplot(plot_data, aes(x = StockPrice)) +
   geom_line(aes(y = Alsó_Határ, color = "Alsó határ (bid)"), size = 1) +
   
   # Piros függőleges vonal (spot)
-  geom_vline(xintercept = S0, linetype = "dashed", color = "#660000", size = 1.2) +
+  geom_vline(xintercept = S0, linetype = "dashed", color = "#8A2BE2", size = 1.2) +
   geom_label(aes(x = S0, y = max(plot_data$Felső_Határ) * 0.9, 
                  label = paste0("S(0): $", round(S0, 2))), 
-             color = "#660000", fill = "white", label.size = 0.5, size = 3.5,
+             color = "#8A2BE2", fill = "white", label.size = 0.5, size = 3.5,
              vjust = -0.5, hjust = 1.1) +
   
   # Szürke függőleges vonal (strike)
-  geom_vline(xintercept = K, linetype = "dotted", color = "#00FF00", size = 1.8) +
+  geom_vline(xintercept = K, linetype = "dotted", color = "black", size = 1.8) +
   geom_label(aes(x = K, y = min(plot_data$Felső_Határ) * 0.09,
                  label = paste0("Strike: $", round(K, 4))), 
-             color = "#00FF00", fill = "white", label.size = 0.5, size = 3.5,
+             color = "black", fill = "white", label.size = 0.5, size = 3.5,
              vjust = -0.5, hjust = -0.1) +
   
   scale_color_manual(values = c("Felső határ (ask)" = "#C72C48", "Alsó határ (bid)" = "#20B2AA")) +
@@ -181,20 +181,20 @@ plot_prices
 plot_data$Spread <- plot_data$Felső_Határ - plot_data$Alsó_Határ
 
 plot_spread <- ggplot(plot_data, aes(x = StockPrice, y = Spread)) +
-  geom_line(color = "#8A2BE2", size = 1) +
+  geom_line(color = "#C72C48", size = 1) +
   
   # Piros függőleges vonal (spot)
-  geom_vline(xintercept = S0, linetype = "dashed", color = "#660000", size = 1.2) +
+  geom_vline(xintercept = S0, linetype = "dashed", color = "#8A2BE2", size = 1.2) +
   geom_label(aes(x = S0, y = max(plot_data$Spread) * 0.95,   
                  label = paste0("Spot: ", round(S0, 2))), 
-             color = "#660000", fill = "white", label.size = 0.5, size = 3.5,
+             color = "#8A2BE2", fill = "white", label.size = 0.5, size = 3.5,
              vjust = -0.5, hjust = 1.1) +
   
   # Szürke függőleges vonal (strike)
-  geom_vline(xintercept = K, linetype = "dotted", color = "#00FF00", size = 1.8) +
+  geom_vline(xintercept = K, linetype = "dotted", color = "black", size = 1.8) +
   geom_label(aes(x = K, y = max(plot_data$Spread) * 0.09,
                  label = paste0("Strike: ", round(K, 4))), 
-             color = "#00FF00", fill = "white", label.size = 0.5, size = 3.5,
+             color = "black", fill = "white", label.size = 0.5, size = 3.5,
              vjust = -0.5, hjust = -0.1) +
   
   labs(
