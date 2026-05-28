@@ -634,4 +634,156 @@ gamma_plot_rep <- ggplot(plot_data,
 delta_plot_rep + gamma_plot_rep
 
 ```
+```{r}
+#------------------------------------------
+# Görögök összehasonlítása
+#------------------------------------------
 
+####################################
+# PARAMÉTEREK
+####################################
+
+maturities_sel <- c(1.0, 0.5, 0.25, 0.10, 0.05, 0.01)
+S_grid         <- seq(230, 290, by = 0.5)
+
+####################################
+# ADATOK
+####################################
+
+gorog_data <- expand.grid(S = S_grid, T = maturities_sel) %>%
+  mutate(
+    Delta_dig  = digital_call_delta(S, K, r, sigma_mkt, T),
+    Gamma_dig  = digital_call_gamma(S, K, r, sigma_mkt, T),
+
+    Delta_bull = (vanilla_delta(S, K_lower, T, r, sigma_mkt) -
+                  vanilla_delta(S, K_upper, T, r, sigma_mkt)) * multiplier,
+    Gamma_bull = (vanilla_gamma(S, K_lower, T, r, sigma_mkt) -
+                  vanilla_gamma(S, K_upper, T, r, sigma_mkt)) * multiplier,
+
+    # Nettó portfólió: short digitális + long bull spread 
+    Delta_net  = -Delta_dig + Delta_bull,
+    Gamma_net  = -Gamma_dig + Gamma_bull,
+
+    Lejarat = factor(paste0("T = ", T, " év"),
+                     levels = paste0("T = ", maturities_sel, " év"))
+  )
+
+####################################
+# HOSSZÚ FORMÁTUM
+####################################
+
+komp_szinek <- c(
+  "Digitális call"  = "#2171B5",
+  "Bull call spread" = "#C72C48",
+  "Nettó portfólió" = "#228B22"
+)
+
+komp_vonaltipus <- c(
+  "Digitális call"  = "solid",
+  "Bull call spread" = "dashed",
+  "Nettó portfólió" = "solid"
+)
+
+delta_long <- gorog_data %>%
+  select(S, Lejarat, Delta_dig, Delta_bull, Delta_net) %>%
+  pivot_longer(
+    cols      = c(Delta_dig, Delta_bull, Delta_net),
+    names_to  = "Komponens",
+    values_to = "Delta"
+  ) %>%
+  mutate(Komponens = recode(Komponens,
+    "Delta_dig"  = "Digitális call",
+    "Delta_bull" = "Bull call spread",
+    "Delta_net"  = "Nettó portfólió"
+  ))
+
+gamma_long <- gorog_data %>%
+  select(S, Lejarat, Gamma_dig, Gamma_bull, Gamma_net) %>%
+  pivot_longer(
+    cols      = c(Gamma_dig, Gamma_bull, Gamma_net),
+    names_to  = "Komponens",
+    values_to = "Gamma"
+  ) %>%
+  mutate(Komponens = recode(Komponens,
+    "Gamma_dig"  = "Digitális call",
+    "Gamma_bull" = "Bull call spread",
+    "Gamma_net"  = "Nettó portfólió"
+  ))
+
+####################################
+# DELTA ÖSSZEHASONLÍTÁS
+####################################
+
+delta_comp_plot <- ggplot(delta_long,
+                          aes(x = S, y = Delta,
+                              color    = Komponens,
+                              linetype = Komponens)) +
+  geom_line(size = 1.1) +
+  geom_vline(xintercept = K, linetype = "dotted",
+             color = "black", alpha = 0.5) +
+  facet_wrap(~ Lejarat, scales = "free_y", ncol = 2) +
+  scale_color_manual(values    = komp_szinek) +
+  scale_linetype_manual(values = komp_vonaltipus) +
+  labs(
+    title    = "Delta összehasonlítása",
+    subtitle = "Digitális call (short) + Bull call spread (fedezet) = Nettó portfólió",
+    x        = "Alaptermék árfolyama ($)",
+    y        = expression(Delta),
+    color    = NULL,
+    linetype = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position  = "bottom",
+    strip.text       = element_text(face = "bold"),
+    legend.key.width = unit(1.5, "cm")
+  )
+
+####################################
+# GAMMA ÖSSZEHASONLÍTÁS
+####################################
+
+gamma_comp_plot <- ggplot(gamma_long,
+                          aes(x = S, y = Gamma,
+                              color    = Komponens,
+                              linetype = Komponens)) +
+  geom_line(size = 1.1) +
+  geom_vline(xintercept = K, linetype = "dotted",
+             color = "black", alpha = 0.5) +
+  geom_hline(yintercept = 0, color = "gray60", size = 0.5) +
+  facet_wrap(~ Lejarat, scales = "free_y", ncol = 2) +
+  scale_color_manual(values    = komp_szinek) +
+  scale_linetype_manual(values = komp_vonaltipus) +
+  labs(
+    title    = "Gamma összehasonlítása",
+    subtitle = "Digitális call (short) + Bull call spread (fedezet) = Nettó portfólió",
+    x        = "Alaptermék árfolyama ($)",
+    y        = expression(Gamma),
+    color    = NULL,
+    linetype = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position  = "bottom",
+    strip.text       = element_text(face = "bold"),
+    legend.key.width = unit(1.5, "cm")
+  )
+
+delta_comp_plot
+ggsave(
+  "delta_comp_plot_hd.png",
+  plot = delta_comp_plot,
+  width = 14,
+  height = 8,
+  dpi = 600
+)
+gamma_comp_plot
+
+ggsave(
+  "gamma_comp_plot_hd.png",
+  plot = gamma_comp_plot,
+  width = 14,
+  height = 8,
+  dpi = 600
+)
+```
